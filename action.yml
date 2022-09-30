@@ -1,0 +1,19 @@
+name: 'Changelog Labeler'
+description: 'Automatically label new pull requests based on the Changelog'
+author: 'staniulytepaulina'
+inputs:
+  repo-token:
+    description: 'The GITHUB_TOKEN secret'
+    default: ${{ github.token }}
+    required: false
+  configuration-path:
+    description: 'The Changelog path for the label configuration'
+    default: 'Changelogs/Unreleased.md'
+    required: false
+  section-symbol:
+    description: 'The symbols (header) which indicate a new section in Changelog'
+    default: '###'
+    required: false
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
