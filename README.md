@@ -31,8 +31,14 @@ Inputs are defined in `action.yml` to let you configure the labeler:
 #### Setting up project locally
 
 `npm install @actions/core --save`
+
 `npm install @actions/github --save`
+
 `npm i -g @vercel/ncc`
 
 After you edit the `labeler.js` file, you need to package it:
 `npx ncc build src/labeler.js -o dist`
+
+#### Testing changes
+
+There is a testing workflow `.github/workflows/test-action.yml` in this repository, which allows to test the changes by creating a PR.
