@@ -10,23 +10,29 @@ Create a workflow (eg: `.github/workflows/changelog-labeler.yml`) with content:
 
 ```yml
 name: "Pull Request Labeler"
-on: pull_request
+on:
+  pull_request:
+    types: ["opened", "reopened", "converted_to_draft", "ready_for_review"]
 jobs:
   triage:
     runs-on: ubuntu-latest
     steps:
-      - uses: vinted/changelog-labeler-action@v1.0.0
+      - uses: vinted/changelog-labeler-action@v2.0.0
 ```
 
 #### Inputs
 
 Inputs are defined in `action.yml` to let you configure the labeler:
 
-| Name                 | Description                                                    | Default                    |
-| -------------------- | -------------------------------------------------------------- | -------------------------- |
-| `repo-token`         | The GITHUB_TOKEN secret                                        | N/A                        |
-| `configuration-path` | The Changelog path for the label configuration                 | `Changelogs/Unreleased.md` |
-| `section-symbol`     | The symbols (header) which indicate a new section in Changelog | `###`                      |
+| Name                 | Description                                                                                                    | Default                      |
+| -------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| `repo-token`         | The GITHUB_TOKEN secret                                                                                        | N/A                          |
+| `base-branch`        | The base branch for your repo                                                                                  | `'master'`                   |
+| `configuration-path` | The Changelog path for the label configuration                                                                 | `'Changelogs/Unreleased.md'` |
+| `section-symbol`     | The symbols (header) which indicate a new section in Changelog                                                 | `'###'`                      |
+| `label-for-umbrella` | The label for umbrella branches                                                                                | `'Umbrella'`                 |
+| `label-for-release`  | The label for merging into release branch. If you don't want to add labels for this, pass an empty string `''` | `'Bug'`                      |
+| `label-for-draft`    | The label for draft PR                                                                                         | `'Work in progress'`         |
 
 #### Setting up project locally
 

@@ -6,6 +6,10 @@ inputs:
     description: 'The GITHUB_TOKEN secret'
     default: ${{ github.token }}
     required: false
+  base-branch:
+    description: 'The base branch for your repo'
+    default: 'master'
+    required: false
   configuration-path:
     description: 'The Changelog path for the label configuration'
     default: 'Changelogs/Unreleased.md'
@@ -13,6 +17,18 @@ inputs:
   section-symbol:
     description: 'The symbols (header) which indicate a new section in Changelog'
     default: '###'
+    required: false
+  label-for-umbrella:
+    description: 'The label for umbrella branches'
+    default: 'Umbrella'
+    required: false
+  label-for-release:
+    description: 'The label for PR merging into release branch'
+    default: 'Bug'
+    required: false
+  label-for-draft:
+    description: 'The label for draft PR'
+    default: 'Work in progress'
     required: false
 runs:
   using: 'node16'

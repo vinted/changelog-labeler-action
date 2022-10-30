@@ -6,11 +6,34 @@ async function run() {
         const token = core.getInput("repo-token");
         const configPath = core.getInput("configuration-path");
         const sectionHeader = core.getInput("section-symbol");
+        const baseBranch = core.getInput("base-branch");
+        const umbrellaLabel = core.getInput("label-for-umbrella");
+        const releaseLabel = core.getInput("label-for-release");
+        const draftLabel = core.getInput("label-for-draft");
         const prNumber = github.context.issue.number;
         const ref = github.context.ref;
         const path = configPath.replace(/^(?:\.\.\/)+/, "").replace(/^(?:\.\/)+/, "");
 
         const octokit = github.getOctokit(token);
+
+        const prInfo = await fetchPrBranch(octokit, prNumber);
+        const prBaseBranch = JSON.stringify(prInfo.base.ref).replace(/^"(.*)"$/, '$1');
+        const prBranch = JSON.stringify(prInfo.head.ref).replace(/^"(.*)"$/, '$1');
+        const isPrDraft = JSON.stringify(prInfo.draft).replace(/^"(.*)"$/, '$1');
+
+        if ((isPrDraft == 'true') || (github.context.payload.action == 'converted_to_draft')) {
+            await addLabels(octokit, prNumber, [draftLabel]);
+            return;
+        } else if (github.context.payload.action == 'ready_for_review') {
+            await removeLabels(octokit, prNumber, draftLabel)
+        } else if ((prBranch.toLowerCase().includes('umbrella')) && (prBaseBranch == baseBranch)) {
+            await addLabels(octokit, prNumber, [umbrellaLabel]);
+            return;
+        } else if ((releaseLabel.trim() != '') && (prBaseBranch.toLowerCase().includes('release'))) {
+            console.log(releaseLabel)
+            await addLabels(octokit, prNumber, [releaseLabel]);
+            return;
+        }
 
         const diff = await fetchPrDiff(octokit, prNumber);
         const diffString = JSON.stringify(diff);
@@ -87,6 +110,12 @@ function getLabels(contentString, addedString, sectionHeader) {
             section = section.split('\\n')[0]; // takes the front after split
             section = section.trim();
 
+            if (section == 'New Features') {
+                section = 'Feature'
+            } else if (section == 'New Features') {
+                section = 'Feature removal'
+            }
+
             labels.push(section)
         }
     });
@@ -119,6 +148,16 @@ async function fetchPrDiff(octokit, prNumber) {
     return diff
 }
 
+async function fetchPrBranch(octokit, prNumber) {
+    const { data: info } = await octokit.rest.pulls.get({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        pull_number: prNumber,
+    });
+
+    return info
+}
+
 async function fetchFileContent(octokit, configPath, ref) {
     const { data: file } = await octokit.rest.repos.getContent({
         owner: github.context.repo.owner,
@@ -146,5 +185,14 @@ async function addLabels(octokit, prNumber, labels) {
         repo: github.context.repo.repo,
         issue_number: prNumber,
         labels: labels,
+    });
+}
+
+async function removeLabels(octokit, prNumber, label) {
+    octokit.rest.issues.removeLabel({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        issue_number: prNumber,
+        name: label,
     });
 }
